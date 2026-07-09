@@ -59,6 +59,7 @@
   .caveat{border:1px dashed var(--rule);background:var(--dim);padding:12px 16px;margin-bottom:8px;font-size:12.5px;line-height:1.55;color:#3a3630;}
   .caveat strong{color:var(--ink);}
   .epistemic-note{border-top:1px dashed var(--rule);margin-top:14px;padding-top:14px;font-family:'DM Serif Display',serif;font-style:italic;font-size:13px;line-height:1.55;color:var(--muted);}
+  .followup-teaser{border:1px solid var(--rule);border-left:3px solid var(--accent2);background:#eef1fa;padding:12px 16px;margin-bottom:8px;font-size:12.5px;line-height:1.55;color:#2a2620;}
 
   .progress-strip{position:relative;height:52px;margin-bottom:22px;}
   .progress-track{position:absolute;top:26px;left:0;right:0;height:3px;background:var(--rule);}
@@ -296,7 +297,9 @@ function evaluate(){
   }
   caveats.push('Auch bei eindeutiger Einordnung: ein realer Pilot an einem einzigen, konkreten Fall zeigt verlässlicher als jede Selbstprüfung, ob sich in der Praxis tatsächlich neue, nicht vorab kodierte Pfade ergeben.');
 
-  renderResults({ quadrantKey, verdictLabel, verdictText, xPct, yPct, pfadBucket, heteroBucket, caveats, q3 });
+  const showFollowup = (quadrantKey === 'tr' && q3 !== 0) || (quadrantKey === 'grau' && q3 !== 0);
+
+  renderResults({ quadrantKey, verdictLabel, verdictText, xPct, yPct, pfadBucket, heteroBucket, caveats, q3, showFollowup });
 }
 
 function iconFor(r){
@@ -358,6 +361,8 @@ function renderResults(r){
     </div>
 
     ${r.caveats.map(c => `<div class="caveat">${c}</div>`).join('')}
+
+    ${r.showFollowup ? '<div class="followup-teaser">Wie sich das technisch konkret abbilden lässt — welche Bausteine, welcher Aufwand, wo die Stolpersteine liegen — zeige ich in einem Folgebeitrag an einem echten Beispiel.</div>' : ''}
 
     <div class="epistemic-note">Diese Einordnung basiert auf fünf vereinfachten Fragen — sie ersetzt keine echte Fallanalyse. Verstehen Sie sie als ersten, groben Kategorisierungsversuch: gut genug, um zu wissen, worüber es sich zu sprechen lohnt, nicht dafür gedacht, eine Entscheidung allein zu tragen.</div>
   `;
