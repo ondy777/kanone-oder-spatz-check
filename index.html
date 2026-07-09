@@ -44,10 +44,8 @@
   .quadrant{position:relative;width:260px;height:260px;border:1px solid var(--rule);background:var(--dim);flex-shrink:0;}
   .qd-cell{position:absolute;width:50%;height:50%;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'DM Mono',monospace;font-size:9px;line-height:1.4;padding:8px;color:var(--muted);border:1px solid var(--rule);}
   .qd-tl{top:0;left:0;} .qd-tr{top:0;left:50%;} .qd-bl{top:50%;left:0;} .qd-br{top:50%;left:50%;}
-  .qd-tr.qd-target{background:#fdf1ee;color:var(--accent);font-weight:500;}
+  .qd-cell.qd-target{background:#fdf1ee;color:var(--accent);font-weight:500;border-color:var(--accent);}
   .marker{position:absolute;width:16px;height:16px;border-radius:50%;background:var(--accent2);border:3px solid var(--card);box-shadow:0 0 0 1.5px var(--accent2);transform:translate(-50%,-50%);transition:all .4s ease;z-index:5;}
-  .axis-label{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
-  .axis-y{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;}
   .quadrant-meta{flex:1;min-width:220px;}
   .qm-row{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:11.5px;padding:8px 0;border-bottom:1px dashed var(--rule);}
   .qm-row:last-child{border-bottom:none;}
@@ -60,10 +58,26 @@
 
   .caveat{border:1px dashed var(--rule);background:var(--dim);padding:12px 16px;margin-bottom:8px;font-size:12.5px;line-height:1.55;color:#3a3630;}
   .caveat strong{color:var(--ink);}
+  .epistemic-note{border-top:1px dashed var(--rule);margin-top:14px;padding-top:14px;font-family:'DM Serif Display',serif;font-style:italic;font-size:13px;line-height:1.55;color:var(--muted);}
+
+  .progress-strip{position:relative;height:52px;margin-bottom:22px;}
+  .progress-track{position:absolute;top:26px;left:0;right:0;height:3px;background:var(--rule);}
+  .progress-fill{position:absolute;top:26px;left:0;height:3px;background:var(--accent2);width:0%;transition:width .4s ease;}
+  .progress-bird{position:absolute;top:0;left:0%;width:40px;height:40px;transform:translateX(-50%);transition:left .4s ease;}
+  .progress-caption{position:absolute;top:34px;right:0;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+  @keyframes hop{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-6px);}}
+  .progress-bird.hopping{animation:hop .5s ease;}
+
+  .res-icon-row{display:flex;align-items:center;gap:14px;margin-bottom:6px;}
+  .res-icon{width:44px;height:44px;flex-shrink:0;}
+  .res-icon.muted{opacity:.45;}
 
   .footer{border-top:1px solid var(--rule);padding-top:14px;margin-top:28px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
   .footer-note{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
   .mantra{font-family:'DM Serif Display',serif;font-style:italic;font-size:13px;color:var(--muted);}
+  .author-line{text-align:center;margin-top:16px;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+  .author-line a{color:var(--accent2);text-decoration:none;}
+  .author-line a:hover{text-decoration:underline;}
 
   @media(max-width:640px){.quadrant-wrap{flex-direction:column;}.quadrant{width:100%;height:220px;}}
 </style>
@@ -77,7 +91,22 @@
   </div>
 
   <div class="lead">
-    Fünf Fragen zu Ihrem konkreten Fall. Keine Architektur-Entscheidung vorab nötig — die Auswertung zeigt, in welchem der vier möglichen Fälle Sie stehen, und was das für die passende Lösung bedeutet.
+    Fünf Fragen zu Ihrem konkreten Fall. Denken Sie dabei an eine wiederkehrende Aufgabe aus Ihrem Alltag, die heute noch manuell mehrere Systeme oder Quellen zusammenführt — z. B. eine Abweichungsanalyse, eine Anfrage, die durch mehrere Abteilungen wandert, oder eine Prüfaufgabe. Alle folgenden Fragen beziehen sich auf genau diesen einen Fall. Keine Architektur-Entscheidung vorab nötig — die Auswertung ist eine erste, vereinfachte Kategorisierung, kein abschließendes Urteil. Sie soll vor allem eines: die richtigen Fragen für ein echtes Gespräch schärfen, bevor über Technik gesprochen wird.
+  </div>
+
+  <div class="progress-strip">
+    <div class="progress-track"></div>
+    <div class="progress-fill" id="progressFill"></div>
+    <svg class="progress-bird" id="progressBird" viewBox="0 0 40 40">
+      <circle cx="18" cy="20" r="9" fill="var(--ink)"/>
+      <circle cx="25" cy="14" r="5.5" fill="var(--ink)"/>
+      <polygon points="30,13.5 38,15.5 30,17.5" fill="var(--accent)"/>
+      <path d="M9 23 Q3 19 1 25 Q7 27 9 23" fill="var(--ink)"/>
+      <circle cx="27" cy="12" r="1" fill="var(--paper)"/>
+      <line x1="14" y1="28" x2="12" y2="33" stroke="var(--ink)" stroke-width="1.6"/>
+      <line x1="19" y1="28" x2="21" y2="33" stroke="var(--ink)" stroke-width="1.6"/>
+    </svg>
+    <div class="progress-caption" id="progressCaption">0 / 5 beantwortet</div>
   </div>
 
   <div id="questions"></div>
@@ -94,6 +123,7 @@
     <div class="footer-note">Selbstprüfungs-Tool · unabhängig von einem konkreten Anbieter anwendbar</div>
     <div class="mantra">Nicht jede Frage braucht einen Agenten.</div>
   </div>
+  <div class="author-line">Erstellt von André Lippka · <a href="https://www.linkedin.com/in/andré-lippka-515b859a" target="_blank" rel="noopener">LinkedIn</a></div>
 
 </div>
 
@@ -101,7 +131,7 @@
 const questions = [
   {
     id: 'q1', dim: 'pfad',
-    text: 'Wie verteilen sich die Ursachen Ihrer letzten Fälle?',
+    text: 'Wie verteilen sich die Ursachen, wenn Sie an die letzten Vorkommnisse dieses Falls zurückdenken?',
     options: [
       { label: 'Konzentriert auf wenige, immer wiederkehrende Muster', score: 0 },
       { label: 'Überwiegend wiederkehrend, mit einzelnen Ausreißern', score: 1 },
@@ -176,11 +206,21 @@ function renderQuestions(){
 }
 
 function updateEvalButton(){
-  const done = questions.every(q => answers[q.id] !== undefined);
+  const answeredCount = questions.filter(q => answers[q.id] !== undefined).length;
+  const done = answeredCount === questions.length;
   document.getElementById('evalBtn').disabled = !done;
   document.getElementById('hintText').textContent = done
     ? 'Alle Fragen beantwortet — Einschätzung anzeigen.'
-    : `Noch ${questions.length - Object.keys(answers).length} von ${questions.length} Fragen offen.`;
+    : `Noch ${questions.length - answeredCount} von ${questions.length} Fragen offen.`;
+
+  const pct = (answeredCount / questions.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  const bird = document.getElementById('progressBird');
+  bird.style.left = pct + '%';
+  bird.classList.remove('hopping');
+  void bird.offsetWidth;
+  bird.classList.add('hopping');
+  document.getElementById('progressCaption').textContent = `${answeredCount} / ${questions.length} beantwortet`;
 }
 
 function bucket(score){
@@ -212,8 +252,13 @@ function evaluate(){
   let quadrantKey, verdictLabel, verdictText;
   if(pfadBucket === 'mittel' || heteroBucket === 'mittel'){
     quadrantKey = 'grau';
-    verdictLabel = 'Grenzfall — genauer prüfen';
-    verdictText = 'Weder klar stabil/homogen noch klar variabel/heterogen. Bevor eine Architekturentscheidung fällt: die letzten 50–100 realen Fälle tatsächlich nach Ursachen kategorisieren, statt aus dem Bauchgefühl zu entscheiden. Das ist eine Ein-Tage-Übung, die die Einordnung in einen der vier eindeutigen Fälle erst zulässt.';
+    if(q3 === 0){
+      verdictLabel = 'Vorerst nicht investieren, beobachten';
+      verdictText = 'Die Einordnung zwischen Architektur-Fällen ist hier nicht eindeutig — aber das ist zweitrangig, solange die Frage selten vorkommt und eine falsche Antwort kaum Folgen hätte. Der Aufbauaufwand würde sich unabhängig vom Architektur-Ergebnis nicht lohnen. Sinnvoller: die Situation beobachten, und die genauere Prüfung erst anstoßen, wenn Häufigkeit oder Fehlerkosten spürbar steigen.';
+    } else {
+      verdictLabel = 'Grenzfall — genauer prüfen';
+      verdictText = 'Weder klar stabil/homogen noch klar variabel/heterogen. Bevor eine Architekturentscheidung fällt: die letzten 50–100 realen Fälle tatsächlich nach Ursachen kategorisieren, statt aus dem Bauchgefühl zu entscheiden. Das ist eine Ein-Tage-Übung, die die Einordnung in einen der vier eindeutigen Fälle erst zulässt.';
+    }
   } else if(pfadBucket === 'niedrig' && heteroBucket === 'niedrig'){
     quadrantKey = 'bl';
     verdictLabel = 'Klassisches Reporting/Dashboard reicht';
@@ -228,13 +273,18 @@ function evaluate(){
     verdictText = 'Die Fragen sind vielfältig und schwer vorab kodierbar, aber es genügt eine einzelne, homogene Datenquelle. Das rechtfertigt ein gutes Such-/Reasoning-Werkzeug, aber nicht den vollen Aufwand einer Multi-Server-Architektur mit Anti-Corruption-Layer und zentralem Audit-Dienst.';
   } else {
     quadrantKey = 'tr';
-    verdictLabel = 'Einziger Fall, in dem sich ein agentischer Ansatz architektonisch rechtfertigt';
-    verdictText = 'Pfade sind vorab nicht bekannt, und die Quellen sind strukturell heterogen. Das ist der einzige der vier Fälle, in dem der Aufbauaufwand — Tool-Design, Normalisierung, Autorisierung, Lineage — durch einen echten Zusatznutzen gedeckt wird.';
+    if(q3 === 0){
+      verdictLabel = 'Architektur passt, Aufwand lohnt sich hier (noch) nicht';
+      verdictText = 'Pfade sind vorab nicht bekannt, und die Quellen sind strukturell heterogen — das erfüllt zwar das architektonische Muster, das einen agentischen Ansatz grundsätzlich rechtfertigt. Aber: Bei seltenem Vorkommen und kaum spürbaren Folgen einer falschen Antwort trägt der Aufbauaufwand — Tool-Design, Normalisierung, Autorisierung, Lineage — hier nicht. Erst wenn Häufigkeit oder Fehlerkosten steigen, kippt die Rechnung zugunsten von Agentic.';
+    } else {
+      verdictLabel = 'Einziger Fall, in dem sich ein agentischer Ansatz architektonisch rechtfertigt';
+      verdictText = 'Pfade sind vorab nicht bekannt, und die Quellen sind strukturell heterogen. Das ist der einzige der vier Fälle, in dem der Aufbauaufwand — Tool-Design, Normalisierung, Autorisierung, Lineage — durch einen echten Zusatznutzen gedeckt wird.';
+    }
   }
 
   const caveats = [];
-  if(q3 === 0){
-    caveats.push('<strong>Volumen/Fehlerkosten-Vorbehalt:</strong> Selbst wenn die Einordnung oben für einen agentischen Ansatz spricht — bei seltenem, folgenlosem Bedarf trägt der Aufbauaufwand nicht. Erst häufiges Vorkommen und/oder hohe Fehlerkosten rechtfertigen die Investition.');
+  if(q3 === 0 && quadrantKey !== 'tr' && quadrantKey !== 'grau'){
+    caveats.push('<strong>Volumen/Fehlerkosten-Vorbehalt:</strong> Bei seltenem, folgenlosem Bedarf würde sich ein agentischer Ansatz ohnehin nicht lohnen — hier war die architektonische Einordnung aber bereits unabhängig davon eindeutig.');
   }
   if(q5 === 2){
     caveats.push('<strong>Compliance-Hinweis:</strong> Ein zwingender Nachweisbedarf spricht zusätzlich für eine dedizierte Autorisierungs- und Audit-Schicht, sofern ein agentischer Ansatz gewählt wird — nicht optional, sondern Voraussetzung.');
@@ -246,7 +296,36 @@ function evaluate(){
   }
   caveats.push('Auch bei eindeutiger Einordnung: ein realer Pilot an einem einzigen, konkreten Fall zeigt verlässlicher als jede Selbstprüfung, ob sich in der Praxis tatsächlich neue, nicht vorab kodierte Pfade ergeben.');
 
-  renderResults({ quadrantKey, verdictLabel, verdictText, xPct, yPct, pfadBucket, heteroBucket, caveats });
+  renderResults({ quadrantKey, verdictLabel, verdictText, xPct, yPct, pfadBucket, heteroBucket, caveats, q3 });
+}
+
+function iconFor(r){
+  const sparrow = `<svg class="res-icon" viewBox="0 0 40 40">
+    <circle cx="18" cy="20" r="9" fill="var(--ink)"/>
+    <circle cx="25" cy="14" r="5.5" fill="var(--ink)"/>
+    <polygon points="30,13.5 38,15.5 30,17.5" fill="var(--accent)"/>
+    <path d="M9 23 Q3 19 1 25 Q7 27 9 23" fill="var(--ink)"/>
+    <circle cx="27" cy="12" r="1" fill="var(--paper)"/>
+    <line x1="14" y1="28" x2="12" y2="33" stroke="var(--ink)" stroke-width="1.6"/>
+    <line x1="19" y1="28" x2="21" y2="33" stroke="var(--ink)" stroke-width="1.6"/>
+  </svg>`;
+  const cannon = `<svg class="res-icon" viewBox="0 0 40 40">
+    <circle cx="12" cy="28" r="8" fill="none" stroke="var(--ink)" stroke-width="2.5"/>
+    <circle cx="12" cy="28" r="2" fill="var(--accent)"/>
+    <rect x="10" y="8" width="24" height="9" rx="4" fill="var(--ink)" transform="rotate(-18 10 8)"/>
+  </svg>`;
+  const question = `<svg class="res-icon" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="17" fill="none" stroke="var(--rule)" stroke-width="2.5"/>
+    <text x="20" y="27" text-anchor="middle" font-family="DM Serif Display, serif" font-size="20" fill="var(--muted)">?</text>
+  </svg>`;
+
+  if(r.quadrantKey === 'tr'){
+    return r.q3 === 0 ? cannon.replace('class="res-icon"', 'class="res-icon muted"') : cannon;
+  }
+  if(r.quadrantKey === 'grau'){
+    return r.q3 === 0 ? sparrow : question;
+  }
+  return sparrow;
 }
 
 function renderResults(r){
@@ -254,12 +333,15 @@ function renderResults(r){
   const el = document.getElementById('results');
   el.innerHTML = `
     <div class="res-eyebrow">Ihre Einordnung</div>
-    <div class="res-title">${r.verdictLabel}</div>
+    <div class="res-icon-row">
+      ${iconFor(r)}
+      <div class="res-title" style="margin-bottom:0;">${r.verdictLabel}</div>
+    </div>
 
     <div class="quadrant-wrap">
       <div class="quadrant">
         <div class="qd-cell qd-tl${cellClass('tl')}">Variabel × Homogen<br>Reasoning-Tool, keine Multi-Source</div>
-        <div class="qd-cell qd-tr${cellClass('tr')}">Variabel × Heterogen<br>Agentic gerechtfertigt</div>
+        <div class="qd-cell qd-tr${cellClass('tr')}">Variabel × Heterogen<br>Architektur passt</div>
         <div class="qd-cell qd-bl${cellClass('bl')}">Stabil × Homogen<br>Reporting/Dashboard</div>
         <div class="qd-cell qd-br${cellClass('br')}">Stabil × Heterogen<br>Feste Integration</div>
         <div class="marker" style="left:${r.xPct}%; top:${r.yPct}%;"></div>
@@ -276,6 +358,8 @@ function renderResults(r){
     </div>
 
     ${r.caveats.map(c => `<div class="caveat">${c}</div>`).join('')}
+
+    <div class="epistemic-note">Diese Einordnung basiert auf fünf vereinfachten Fragen — sie ersetzt keine echte Fallanalyse. Verstehen Sie sie als ersten, groben Kategorisierungsversuch: gut genug, um zu wissen, worüber es sich zu sprechen lohnt, nicht dafür gedacht, eine Entscheidung allein zu tragen.</div>
   `;
   el.classList.add('visible');
   el.scrollIntoView({ behavior:'smooth', block:'nearest' });
